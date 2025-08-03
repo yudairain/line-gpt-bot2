@@ -1,54 +1,54 @@
-import express from "express";
-import dotenv from "dotenv";
-import { OpenAI } from "openai";
-import { middleware, Client } from "@line/bot-sdk";
-
-dotenv.config();
+const express = require('express');
+const { Configuration, OpenAIApi } = require('openai');
+const { middleware, Client } = require('@line/bot-sdk');
+require('dotenv').config();
 
 const app = express();
-app.use(express.json());
 
-const lineConfig = {
+// ★この行が必要！
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
+
+const config = {
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
-  channelSecret: process.env.LINE_CHANNEL_SECRET
+  channelSecret: process.env.LINE_CHANNEL_SECRET,
 };
 
-const lineClient = new Client(lineConfig);
+const lineClient = new Client(config);
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+const openai = new OpenAIApi(new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+}));
 
-app.post("/webhook", middleware(lineConfig), async (req, res) => {
+app.post('/webhook', middleware(config), async (req, res) => {
   try {
     const events = req.body.events;
 
     for (const event of events) {
-      if (event.type === "message" && event.message.type === "text") {
-        const userMessage = event.message.text;
-
-        const chatResponse = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [{ role: "user", content: userMessage }]
+      if (event.type === 'message' && event.message.type === 'text') {
+        const response = await openai.chat.completions.create({
+          model: 'gpt-3.5-turbo',
+          messages: [{ role: 'user', content: event.message.text }],
         });
 
-        const replyText = chatResponse.choices[0].message.content.trim();
-
+        const replyText = response.choices[0].message.content;
         await lineClient.replyMessage(event.replyToken, {
-          type: "text",
-          text: replyText
+          type: 'text',
+          text: replyText,
         });
       }
     }
 
     res.sendStatus(200);
-  } catch (error) {
-    console.error("エラー:", error);
+  } catch (err) {
+    console.error('エラー発生:', err);
     res.sendStatus(500);
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`ベリーちゃんBotが起動しました（ポート: ${PORT}）`);
+app.listen(3000, () => {
+  console.log('ベリーちゃんBotが起動したのよ。');
 });
