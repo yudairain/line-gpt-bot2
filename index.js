@@ -12,9 +12,12 @@ const lineConfig = {
 
 const lineClient = new Client(lineConfig);
 
-const openai = new OpenAIApi(new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-}));
+const OpenAI = require("openai");
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
 
 app.post('/webhook', middleware(lineConfig), async (req, res) => {
   const events = req.body.events;
