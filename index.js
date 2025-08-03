@@ -1,7 +1,9 @@
 const express = require('express');
+const dotenv = require('dotenv');
 const { Configuration, OpenAIApi } = require('openai');
 const { middleware, Client } = require('@line/bot-sdk');
-require('dotenv').config();
+
+dotenv.config();
 
 const app = express();
 
@@ -28,12 +30,12 @@ app.post('/webhook', middleware(config), async (req, res) => {
 
     for (const event of events) {
       if (event.type === 'message' && event.message.type === 'text') {
-        const response = await openai.chat.completions.create({
+        const response = await openai.createChatCompletion({
           model: 'gpt-3.5-turbo',
           messages: [{ role: 'user', content: event.message.text }],
         });
 
-        const replyText = response.choices[0].message.content;
+        const replyText = response.data.choices[0].message.content;
 
         await lineClient.replyMessage(event.replyToken, {
           type: 'text',
@@ -50,5 +52,5 @@ app.post('/webhook', middleware(config), async (req, res) => {
 });
 
 app.listen(3000, () => {
-  console.log('Server is running.');
+  console.log('ベリーちゃんBotが起動したのよ。');
 });
