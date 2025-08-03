@@ -51,4 +51,3 @@ app.post('/webhook', middleware(lineConfig), async (req, res) => {
 app.listen(3000, () => {
   console.log('ベリーちゃんBotが起動したのよ。');
 });
-# これはベリーちゃんBotのデプロイテストです
