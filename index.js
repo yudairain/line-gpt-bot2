@@ -5,7 +5,6 @@ require('dotenv').config();
 
 const app = express();
 
-// ★この行が必要！
 app.use(express.json({
   verify: (req, res, buf) => {
     req.rawBody = buf;
@@ -35,6 +34,7 @@ app.post('/webhook', middleware(config), async (req, res) => {
         });
 
         const replyText = response.choices[0].message.content;
+
         await lineClient.replyMessage(event.replyToken, {
           type: 'text',
           text: replyText,
@@ -44,11 +44,11 @@ app.post('/webhook', middleware(config), async (req, res) => {
 
     res.sendStatus(200);
   } catch (err) {
-    console.error('エラー発生:', err);
+    console.error(err);
     res.sendStatus(500);
   }
 });
 
 app.listen(3000, () => {
-  console.log('ベリーちゃんBotが起動したのよ。');
+  console.log('Server is running.');
 });
